@@ -1,13 +1,11 @@
 
-name: CloudCart CI
+name: CloudCart CI and Security
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: read
@@ -37,3 +35,26 @@ jobs:
 
       - name: Run automated tests
         run: npm test
+
+  docker-security:
+    name: Build and Scan Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t cloudcart:${{ github.sha }} ./app
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: cloudcart:${{ github.sha }}
+          format: table
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          exit-code: "0"
+          ignore-unfixed: true
