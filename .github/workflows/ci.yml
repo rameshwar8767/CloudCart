@@ -48,31 +48,8 @@ jobs:
       - name: Build Docker image
         run: docker build -t cloudcart:${{ github.sha }} ./app
 
-      - name: Scan image with Trivy
+      - name: Generate Trivy JSON report
         uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: cloudcart:${{ github.sha }}
-          format: table
-          scanners: vuln
-          vuln-type: os,library
-          severity: HIGH,CRITICAL
-          exit-code: "0"
-          ignore-unfixed: true
-
-      
-      - name: Scan image and display findings
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: cloudcart:${{ github.sha }}
-          format: table
-          scanners: vuln
-          vuln-type: os,library
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: "0"
-
-      - name: Enforce vulnerability policy and generate report
-        uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: cloudcart:${{ github.sha }}
           format: json
@@ -81,7 +58,7 @@ jobs:
           vuln-type: os,library
           severity: HIGH,CRITICAL
           ignore-unfixed: true
-          exit-code: "1"
+          exit-code: "0"
 
       - name: Upload Trivy report
         if: always()
@@ -92,3 +69,14 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Enforce vulnerability policy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: cloudcart:${{ github.sha }}
+          format: table
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+          skip-setup-trivy: true
