@@ -58,3 +58,37 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: "0"
           ignore-unfixed: true
+
+      
+      - name: Scan image and display findings
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: cloudcart:${{ github.sha }}
+          format: table
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Enforce vulnerability policy and generate report
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: cloudcart:${{ github.sha }}
+          format: json
+          output: trivy-results.json
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Upload Trivy report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudcart-trivy-report
+          path: trivy-results.json
+          if-no-files-found: warn
+          retention-days: 14
+
