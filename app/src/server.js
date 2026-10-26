@@ -13,8 +13,8 @@ function shutdown(signal) {
 
     server.close((err) => {
         if (err) {
-        console.error("Error closing server:", err);
-        process.exitCode = 1;
+            console.error("Error closing server:", err);
+            process.exitCode = 1;
         }
 
         process.exit();
